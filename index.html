@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fire Bulb Activation Project</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+:root {
+    --blue:#1a7cff;
+    --blue-neon:#4da3ff;
+    --dark:#02040a;
+    --light:#ffffff;
+    --red-neon:#ff003c;
+}
+body {
+    margin:0;
+    font-family:'Poppins', sans-serif;
+    background:var(--dark);
+    color:var(--light);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    height:100vh;
+    transition: background 1s ease;
+}
+
+/* DARK / LIGHT MODE TOGGLE */
+.theme-toggle {
+    position:fixed;
+    top:20px;
+    right:20px;
+    width:50px;
+    height:50px;
+    border-radius:50%;
+    border:none;
+    cursor:pointer;
+    background:var(--blue);
+    color:white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 0 15px var(--blue-neon);
+    transition:0.3s;
+    z-index:1001;
+}
+body.light {
+    background:#dfe8ff;
+    color:#000;
+}
+body.light .theme-toggle {
+    background:#ffd343;
+    color:black;
+    box-shadow:0 0 15px #ffeb85;
+}
+
+/* IMAGE SECTION */
+.header-image {
+    width:100%;
+    max-width:900px;
+    margin-top:40px;
+    border-radius:16px;
+    box-shadow:0 0 30px rgba(0,140,255,0.4);
+    z-index:1;
+    position:relative;
+    transition: opacity 1s ease;
+}
+
+/* VIEW BUTTON */
+.view-btn {
+    margin-top:20px;
+    padding:14px 38px;
+    font-size:20px;
+    border:none;
+    border-radius:50px;
+    cursor:pointer;
+    background:linear-gradient(135deg, var(--blue), var(--blue-neon));
+    color:white;
+    font-weight:600;
+    box-shadow:0 0 18px var(--blue-neon);
+    transition:0.25s;
+    z-index:1001;
+    position:relative;
+}
+.view-btn:hover {
+    transform:scale(1.07);
+}
+
+/* BULB SCREEN */
+#bulbContainer {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:0;
+}
+.bulb {
+    position:absolute;
+    width:35px;
+    height:35px;
+    border-radius:50%;
+    background:radial-gradient(circle, #82c1ff, #0058c9);
+    opacity:0;
+    transform:scale(0.3);
+    filter:blur(3px);
+    transition:0.5s, transform 0.2s;
+}
+.bulb.on {
+    opacity:1;
+    transform:scale(1);
+    filter:blur(0);
+    box-shadow:0 0 15px var(--blue), 0 0 30px var(--blue-neon);
+    animation: flicker 1.2s infinite alternate;
+}
+
+@keyframes flicker {
+    0% { opacity:0.8; }
+    50% { opacity:1; }
+    100% { opacity:0.9; }
+}
+
+/* FINAL RED BULB */
+#finalBulb {
+    position:absolute;
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:radial-gradient(circle, #ff003c, #ff5a70);
+    box-shadow:0 0 35px #ff003c, 0 0 70px #ff5a70;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%) scale(0);
+    z-index:1002;
+    display:none;
+    animation: pulseRed 2s infinite alternate;
+}
+@keyframes pulseRed {
+    0% { transform:translate(-50%, -50%) scale(0.95); box-shadow:0 0 25px #ff003c, 0 0 50px #ff5a70; }
+    100% { transform:translate(-50%, -50%) scale(1.05); box-shadow:0 0 50px #ff003c, 0 0 100px #ff5a70; }
+}
+
+/* FINAL BLUR OVERLAY */
+#blurScreen {
+    position:fixed;
+    inset:0;
+    backdrop-filter:blur(0px);
+    background:rgba(0,0,0,0);
+    opacity:0;
+    transition:1.2s ease;
+    z-index:900;
+}
+
+/* MODERN POPUP THANK YOU MESSAGE */
+#popup {
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%) scale(0.6);
+    padding:50px 80px;
+    text-align:center;
+    font-size:50px;
+    font-weight:700;
+    letter-spacing:2px;
+    opacity:0;
+    z-index:1003;
+    background:linear-gradient(90deg, #ff00ff, #00ffff, #ffff00);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    transition:0.6s ease;
+}
+#popup.show {
+    opacity:1;
+    transform:translate(-50%, -50%) scale(1);
+    animation: rainbowPulse 3s linear infinite;
+}
+@keyframes rainbowPulse {
+    0% { background-position:0% 50%; }
+    100% { background-position:100% 50%; }
+}
+
+/* COUNTDOWN TIMER */
+#countdown {
+    margin-top:15px;
+    font-size:22px;
+    font-weight:600;
+    color:var(--blue-neon);
+    letter-spacing:1px;
+    z-index:1001;
+    position:relative;
+}
+
+/* BACKGROUND ANIMATION AFTER COMPLETE */
+body.complete {
+    animation: backgroundShift 5s infinite alternate;
+}
+@keyframes backgroundShift {
+    0% { background: #02040a; }
+    50% { background: #00144d; }
+    100% { background: #02040a; }
+}
+</style>
+</head>
+<body>
+
+<button id="themeBtn" class="theme-toggle"><i class="fa-solid fa-moon"></i></button>
+
+<img src="/img.png" class="header-image" id="headerImage" alt="main">
+<button class="view-btn" id="viewBtn">View</button>
+<div id="countdown"></div>
+
+<div id="bulbContainer"></div>
+<div id="blurScreen"></div>
+<div id="finalBulb"></div>
+<div id="popup">✨ Thank you! All bulbs activated ✨</div>
+
+<!-- AUDIO TRACK -->
+<audio id="audioTrack" src="/track.mp3" loop></audio> <!-- loop continuously -->
+
+<script>
+// DARK MODE
+const themeBtn = document.getElementById("themeBtn");
+const themeIcon = themeBtn.querySelector("i");
+themeBtn.addEventListener("click", ()=>{
+    document.body.classList.toggle("light");
+    themeIcon.classList.toggle("fa-sun");
+    themeIcon.classList.toggle("fa-moon");
+});
+
+// GENERATE BULBS
+const bulbContainer = document.getElementById("bulbContainer");
+let bulbs = [];
+for(let i=0;i<350;i++){
+    let b = document.createElement("div");
+    b.classList.add("bulb");
+    b.style.left = Math.random()*100 + "%";
+    b.style.top = Math.random()*100 + "%";
+    bulbContainer.appendChild(b);
+    bulbs.push(b);
+}
+
+// BUTTON LOGIC
+const viewBtn = document.getElementById("viewBtn");
+const blurScreen = document.getElementById("blurScreen");
+const popup = document.getElementById("popup");
+const countdownEl = document.getElementById("countdown");
+const headerImage = document.getElementById("headerImage");
+const finalBulb = document.getElementById("finalBulb");
+const audioTrack = document.getElementById("audioTrack");
+
+viewBtn.addEventListener("click", ()=>{
+    viewBtn.disabled = true;
+
+    // PLAY AUDIO
+    audioTrack.currentTime = 0;
+    audioTrack.play();
+
+    // HIDE IMAGE & BUTTON
+    headerImage.style.opacity = 0;
+    viewBtn.style.display = "none";
+    countdownEl.style.display = "block";
+
+    // SHUFFLE BULBS
+    const shuffled = bulbs.sort(()=>Math.random()-0.5);
+    let i = 0;
+    const totalTime = 180000; // 3 min
+    const interval = totalTime / bulbs.length;
+
+    // COUNTDOWN TIMER
+    let remaining = totalTime/1000;
+    countdownEl.textContent = `Time Remaining: ${formatTime(remaining)}`;
+    const countdownTimer = setInterval(()=>{
+        remaining--;
+        if(remaining<=0){ clearInterval(countdownTimer); countdownEl.textContent="Time's up!"; return;}
+        countdownEl.textContent = `Time Remaining: ${formatTime(remaining)}`;
+    },1000);
+
+    // BULB ACTIVATION
+    const bulbTimer = setInterval(()=>{
+        if(i>=shuffled.length){
+            clearInterval(bulbTimer);
+
+            // SHOW FINAL EFFECTS
+            finalBulb.style.display = "block";
+            finalBulb.style.transform="translate(-50%, -50%) scale(1)";
+            blurScreen.style.opacity = 1;
+            blurScreen.style.backdropFilter = "blur(14px)";
+            blurScreen.style.background = "rgba(0,0,0,0.5)";
+            popup.classList.add("show");
+            document.body.classList.add("complete");
+            return;
+        }
+        const bulb = shuffled[i];
+        bulb.classList.add("on");
+        bulb.style.transform="scale(1.2)";
+        setTimeout(()=>{bulb.style.transform="scale(1)";},200);
+        i++;
+    },interval);
+});
+
+// Helper
+function formatTime(sec){
+    const m = Math.floor(sec/60).toString().padStart(2,'0');
+    const s = Math.floor(sec%60).toString().padStart(2,'0');
+    return `${m}:${s}`;
+}
+</script>
+</body>
+</html>
