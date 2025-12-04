@@ -156,30 +156,35 @@ body.light .theme-toggle {
     z-index:900;
 }
 
-/* MODERN POPUP THANK YOU MESSAGE */
-#popup {
+/* MODERN POPUP CARD */
+#popupCard {
     position:fixed;
     top:50%;
     left:50%;
-    transform:translate(-50%, -50%) scale(0.6);
-    padding:50px 80px;
-    text-align:center;
-    font-size:50px;
-    font-weight:700;
-    letter-spacing:2px;
-    opacity:0;
+    transform:translate(-50%, -50%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    backdrop-filter:blur(15px);
+    background:rgba(0,0,0,0.5);
+    padding:30px 50px;
+    border-radius:25px;
+    gap:20px;
     z-index:1003;
-    background:linear-gradient(90deg, #ff00ff, #00ffff, #ffff00);
+    display:none;
+}
+#popupText {
+    font-size:40px;
+    font-weight:700;
+    text-align:center;
+    background:linear-gradient(90deg, purple, black, blue, red);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
-    transition:0.6s ease;
-}
-#popup.show {
-    opacity:1;
-    transform:translate(-50%, -50%) scale(1);
     animation: rainbowPulse 3s linear infinite;
 }
+
 @keyframes rainbowPulse {
     0% { background-position:0% 50%; }
     100% { background-position:100% 50%; }
@@ -217,8 +222,12 @@ body.complete {
 
 <div id="bulbContainer"></div>
 <div id="blurScreen"></div>
-<div id="finalBulb"></div>
-<div id="popup">✨ Thank you! All bulbs activated ✨</div>
+
+<!-- FINAL CARD -->
+<div id="popupCard">
+    <div id="finalBulb"></div>
+    <div id="popupText">✨ Thank you! All bulbs activated ✨</div>
+</div>
 
 <!-- AUDIO TRACK -->
 <audio id="audioTrack" src="/track.mp3" loop></audio> <!-- loop continuously -->
@@ -248,10 +257,11 @@ for(let i=0;i<350;i++){
 // BUTTON LOGIC
 const viewBtn = document.getElementById("viewBtn");
 const blurScreen = document.getElementById("blurScreen");
-const popup = document.getElementById("popup");
 const countdownEl = document.getElementById("countdown");
 const headerImage = document.getElementById("headerImage");
 const finalBulb = document.getElementById("finalBulb");
+const popupCard = document.getElementById("popupCard");
+const popupText = document.getElementById("popupText");
 const audioTrack = document.getElementById("audioTrack");
 
 viewBtn.addEventListener("click", ()=>{
@@ -266,7 +276,6 @@ viewBtn.addEventListener("click", ()=>{
     viewBtn.style.display = "none";
     countdownEl.style.display = "block";
 
-    // SHUFFLE BULBS
     const shuffled = bulbs.sort(()=>Math.random()-0.5);
     let i = 0;
     const totalTime = 180000; // 3 min
@@ -286,16 +295,25 @@ viewBtn.addEventListener("click", ()=>{
         if(i>=shuffled.length){
             clearInterval(bulbTimer);
 
-            // SHOW FINAL EFFECTS
-            finalBulb.style.display = "block";
-            finalBulb.style.transform="translate(-50%, -50%) scale(1)";
+            // SHOW FINAL CARD
             blurScreen.style.opacity = 1;
             blurScreen.style.backdropFilter = "blur(14px)";
             blurScreen.style.background = "rgba(0,0,0,0.5)";
-            popup.classList.add("show");
             document.body.classList.add("complete");
+
+            // Show final bulb first
+            finalBulb.style.display = "block";
+            finalBulb.style.transform = "translate(-50%, -50%) scale(1)";
+
+            // Show text after small delay
+            popupCard.style.display = "flex";
+            setTimeout(()=> {
+                popupText.style.opacity = 1;
+            }, 500);
+
             return;
         }
+
         const bulb = shuffled[i];
         bulb.classList.add("on");
         bulb.style.transform="scale(1.2)";
